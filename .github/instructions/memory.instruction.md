@@ -17,5 +17,10 @@ applyTo: "**"
 # Last session
 
 - Date: 2025-09-13
-- Context: No pending tasks registered. Waiting for instructions or the start of a new task.
+- Context: No pending tasks registered.
 - Status: Ready to receive new instructions or continue from the last point if specified.
+
+# Next session startup task (MANDATORY)
+
+- Task: Review the status of the main GitHub project board (RAG Development, project 1) and ask the user for the next action to take.
+- Policy: There must always be a concrete startup task in this file. If no user task is pending, set a default like this one.
