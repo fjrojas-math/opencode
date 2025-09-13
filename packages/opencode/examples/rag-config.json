@@ -1,0 +1,41 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-3-sonnet",
+  "rag": {
+    "enabled": true,
+    "embedding": {
+      "provider": "openai",
+      "model": "text-embedding-3-small",
+      "apiKey": "{env:OPENAI_API_KEY}"
+    },
+    "store": {
+      "type": "file",
+      "path": "./.opencode/rag_index"
+    },
+    "indexing": {
+      "chunkSize": 512,
+      "chunkOverlap": 50,
+      "autoIndex": true,
+      "include": [
+        "**/*.md",
+        "**/*.txt",
+        "**/*.py",
+        "**/*.ts",
+        "**/*.js"
+      ],
+      "exclude": [
+        "node_modules/**",
+        "*.test.*",
+        "dist/**",
+        "build/**",
+        ".git/**"
+      ],
+      "maxFileSize": 1048576
+    },
+    "retrieval": {
+      "topK": 5,
+      "scoreThreshold": 0.7,
+      "contextWindow": 4000
+    }
+  }
+}

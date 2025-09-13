@@ -236,6 +236,74 @@ export namespace Config {
   export const Mcp = z.discriminatedUnion("type", [McpLocal, McpRemote])
   export type Mcp = z.infer<typeof Mcp>
 
+  export const RagEmbeddingProvider = z
+    .object({
+      provider: z.string().describe("Embedding provider name (e.g., 'openai', 'cohere', 'huggingface')"),
+      model: z.string().describe("Embedding model name (e.g., 'text-embedding-3-small')"),
+      apiKey: z.string().optional().describe("API key for the embedding provider"),
+      baseURL: z.string().optional().describe("Custom base URL for the embedding provider"),
+      dimensions: z.number().int().positive().optional().describe("Embedding dimensions (if supported by model)"),
+      options: z.record(z.any()).optional().describe("Additional provider-specific options"),
+    })
+    .strict()
+    .openapi({
+      ref: "RagEmbeddingProvider",
+    })
+
+  export const RagVectorStore = z
+    .object({
+      type: z.enum(["memory", "file", "sqlite", "chroma", "pinecone", "weaviate"]).describe("Type of vector store"),
+      path: z.string().optional().describe("File path for file-based or SQLite vector stores"),
+      connectionString: z.string().optional().describe("Connection string for external vector stores"),
+      collection: z.string().optional().describe("Collection or index name"),
+      options: z.record(z.any()).optional().describe("Store-specific configuration options"),
+    })
+    .strict()
+    .openapi({
+      ref: "RagVectorStore",
+    })
+
+  export const RagIndexing = z
+    .object({
+      chunkSize: z.number().int().positive().default(512).describe("Text chunk size in tokens"),
+      chunkOverlap: z.number().int().min(0).default(50).describe("Overlap between chunks in tokens"),
+      autoIndex: z.boolean().default(false).describe("Automatically index files in the project"),
+      include: z.array(z.string()).optional().describe("File patterns to include for indexing"),
+      exclude: z.array(z.string()).optional().describe("File patterns to exclude from indexing"),
+      maxFileSize: z.number().int().positive().default(1048576).describe("Maximum file size to index (bytes)"),
+    })
+    .strict()
+    .openapi({
+      ref: "RagIndexing",
+    })
+
+  export const RagRetrieval = z
+    .object({
+      topK: z.number().int().positive().default(5).describe("Number of top results to retrieve"),
+      scoreThreshold: z.number().min(0).max(1).optional().describe("Minimum similarity score threshold"),
+      rerankModel: z.string().optional().describe("Model for reranking retrieved results"),
+      contextWindow: z.number().int().positive().default(4000).describe("Context window size for retrieved content"),
+    })
+    .strict()
+    .openapi({
+      ref: "RagRetrieval",
+    })
+
+  export const Rag = z
+    .object({
+      enabled: z.boolean().default(false).describe("Enable RAG (Retrieval-Augmented Generation)"),
+      embedding: RagEmbeddingProvider.describe("Embedding provider configuration"),
+      store: RagVectorStore.describe("Vector store configuration"),
+      indexing: RagIndexing.optional().describe("Indexing configuration"),
+      retrieval: RagRetrieval.optional().describe("Retrieval configuration"),
+    })
+    .strict()
+    .openapi({
+      ref: "RagConfig",
+    })
+
+  export type Rag = z.infer<typeof Rag>
+
   export const Permission = z.union([z.literal("ask"), z.literal("allow"), z.literal("deny")])
   export type Permission = z.infer<typeof Permission>
 
@@ -437,6 +505,7 @@ export namespace Config {
         .optional()
         .describe("Custom provider configurations and model overrides"),
       mcp: z.record(z.string(), Mcp).optional().describe("MCP (Model Context Protocol) server configurations"),
+      rag: Rag.optional().describe("RAG (Retrieval-Augmented Generation) configuration"),
       formatter: z
         .record(
           z.string(),
