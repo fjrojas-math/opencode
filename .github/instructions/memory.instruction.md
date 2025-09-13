@@ -27,6 +27,6 @@ applyTo: "**"
 
 # Next session startup task (MANDATORY)
 
-- Task: Review the status of the main GitHub project board (RAG Development, project 1) and ask the user for the next action to take.
+- Task: At the start of every session, always consult the current state of the main GitHub project board (RAG Development, project 1) under user fjrojas-math using the GitHub CLI (gh). Summarize all active issues/tasks, their status, and priorities for the user. Then, ask the user cómo desea proceder o en qué tarea quiere ayuda.
 - Policy: There must always be a concrete startup task in this file. If no user task is pending, set a default like this one.
 - If at the start of a session there are no clear instructions from the user, always review the current state of the project (e.g., main GitHub project board, key files, pending tasks) and ask the user how to proceed, based on what you observe in the project.
