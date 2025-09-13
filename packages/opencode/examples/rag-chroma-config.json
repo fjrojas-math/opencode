@@ -1,0 +1,36 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-3-sonnet", 
+  "rag": {
+    "enabled": true,
+    "embedding": {
+      "provider": "cohere",
+      "model": "embed-english-v3.0",
+      "apiKey": "{env:COHERE_API_KEY}",
+      "options": {
+        "inputType": "search_document"
+      }
+    },
+    "store": {
+      "type": "chroma",
+      "connectionString": "http://localhost:8000",
+      "collection": "opencode_documents",
+      "options": {
+        "distance": "cosine"
+      }
+    },
+    "indexing": {
+      "chunkSize": 256,
+      "chunkOverlap": 20,
+      "autoIndex": true,
+      "include": ["docs/**/*.md", "**/*.py"],
+      "exclude": ["**/*.test.*", "node_modules/**"]
+    },
+    "retrieval": {
+      "topK": 10,
+      "scoreThreshold": 0.8,
+      "rerankModel": "cohere/rerank-english-v3.0",
+      "contextWindow": 8000
+    }
+  }
+}
