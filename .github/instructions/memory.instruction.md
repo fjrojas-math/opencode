@@ -8,8 +8,10 @@
 ## ICP and User Preferences
 
 - Always consult this memory file before performing tasks related to project management, issue handling, or user preferences.
-- All communication with the user must be in Spanish, except for commit messages, issue titles/descriptions, and documentation files, which must be in English.
+- All communication with the user must be in Spanish, including technical reports and status updates, except for commit messages, issue titles/descriptions, and documentation files, which must be in English.
+- When posting technical comments to GitHub issues, use English, avoid unnecessary line feeds, and do not use large code blocks or excessive formatting to ensure successful publication.
 - Record any new lessons, preferences, or workflow changes here for future reference.
+- Always keep the context file (`context.log.md`) in English. Before writing a new entry, verify the language and ensure it is in English, regardless of the user's language or the content of the session.
 
 ---
 
