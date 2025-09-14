@@ -3,24 +3,26 @@
 # Usage examples (copy & paste):
 #
 # 1. Full flow (gets and exports both tokens):
-#    source ./scripts/copilot_token_flow.sh --authorize
+#    source ./scripts/copilot_token_flow.sh --authorize [--copy]
 #
 # 2. Refresh only the copilot token using an argument:
-#    source ./scripts/copilot_token_flow.sh --refresh YOUR_ACCESS_TOKEN
+#    source ./scripts/copilot_token_flow.sh --refresh YOUR_ACCESS_TOKEN [--copy]
 #
 # 3. Refresh only the copilot token using an environment variable:
 #    export COPILOT_ACCESS_TOKEN=YOUR_ACCESS_TOKEN
-#    source ./scripts/copilot_token_flow.sh --refresh
+#    source ./scripts/copilot_token_flow.sh --refresh [--copy]
 #
 # After any of these commands, you will have in your shell:
 #   $COPILOT_ACCESS_TOKEN   and   $COPILOT_TOKEN
+# If you use --copy, the copilot token will be copied to your clipboard (if supported).
 
 # set -e
 
 show_help() {
-  echo "Uso: $0 [--authorize | --refresh <access_token>]"
+  echo "Uso: $0 [--authorize | --refresh <access_token>] [--copy]"
   echo "  --authorize           Ejecuta el flujo completo de autorización Device Flow y obtiene el copilot token."
   echo "  --refresh <token>     Refresca el copilot token usando un access token válido (argumento o variable COPILOT_ACCESS_TOKEN)."
+  echo "  --copy                Copia el copilot token al portapapeles si es posible."
   echo "  --help                Muestra esta ayuda."
   echo
   echo "NOTA: Para que las variables exportadas persistan en tu shell, ejecuta el script con:"
@@ -59,7 +61,39 @@ obtener_copilot_token() {
   export COPILOT_TOKEN
   export COPILOT_ACCESS_TOKEN
   echo "Variables exportadas: COPILOT_TOKEN y COPILOT_ACCESS_TOKEN (si aplica)"
+
+  # Copy to clipboard if requested
+  if [[ "$COPILOT_COPY" == "1" ]]; then
+    if command -v xclip >/dev/null 2>&1 && [[ -n "$DISPLAY" ]]; then
+      echo -n "$COPILOT_TOKEN" | xclip -selection clipboard && echo "Copilot token copied to clipboard (xclip)."
+    elif command -v wl-copy >/dev/null 2>&1 && [[ -n "$WAYLAND_DISPLAY" ]]; then
+      echo -n "$COPILOT_TOKEN" | wl-copy && echo "Copilot token copied to clipboard (wl-copy)."
+    else
+      echo "Warning: No clipboard tool found or no graphical session detected."
+      echo "Copy this token manually:"
+      echo "$COPILOT_TOKEN"
+    fi
+  fi
 }
+
+
+# Parse --copy flag (can be anywhere)
+COPILOT_COPY=0
+for arg in "$@"; do
+  if [[ "$arg" == "--copy" ]]; then
+    COPILOT_COPY=1
+    break
+  fi
+done
+
+# Remove --copy from arguments for logic
+ARGS=()
+for arg in "$@"; do
+  if [[ "$arg" != "--copy" ]]; then
+    ARGS+=("$arg")
+  fi
+done
+set -- "${ARGS[@]}"
 
 if [[ $# -eq 0 || "$1" == "--help" ]]; then
   show_help
