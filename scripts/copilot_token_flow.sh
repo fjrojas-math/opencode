@@ -37,8 +37,26 @@ obtener_copilot_token() {
     return 1
   fi
   echo "Copilot token obtenido: $COPILOT_TOKEN"
-  echo "Payload del Copilot Token (JWT):"
-  echo "$COPILOT_TOKEN" | cut -d '.' -f2 | base64 -d | jq
+  # Robust JWT payload decoding
+  COPILOT_PAYLOAD_B64=$(echo "$COPILOT_TOKEN" | cut -d '.' -f2)
+  # Add padding if needed
+  padding=$(( (4 - ${#COPILOT_PAYLOAD_B64} % 4) % 4 ))
+  COPILOT_PAYLOAD_B64_PADDED="$COPILOT_PAYLOAD_B64"
+  if [ $padding -ne 0 ]; then
+    COPILOT_PAYLOAD_B64_PADDED="${COPILOT_PAYLOAD_B64}$(printf '=%.0s' $(seq 1 $padding))"
+  fi
+
+  COPILOT_PAYLOAD_RAW=$(echo "$COPILOT_PAYLOAD_B64_PADDED" | base64 -d 2>/dev/null)
+  if [ $? -ne 0 ]; then
+    echo "Warning: Could not decode JWT payload with base64."
+    echo "Raw payload (base64): $COPILOT_PAYLOAD_B64"
+  else
+    echo "Payload del Copilot Token (JWT):"
+    echo "$COPILOT_PAYLOAD_RAW" | jq . 2>/dev/null || {
+      echo "Warning: Could not parse payload as JSON. Raw payload:"
+      echo "$COPILOT_PAYLOAD_RAW"
+    }
+  fi
   export COPILOT_TOKEN
   export COPILOT_ACCESS_TOKEN
   echo "Variables exportadas: COPILOT_TOKEN y COPILOT_ACCESS_TOKEN (si aplica)"
