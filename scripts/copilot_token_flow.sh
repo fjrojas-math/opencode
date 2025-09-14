@@ -5,12 +5,12 @@
 # 1. Full flow (gets and exports both tokens):
 #    source ./scripts/copilot_token_flow.sh --authorize [--copy]
 #
-# 2. Refresh only the copilot token using an argument:
-#    source ./scripts/copilot_token_flow.sh --refresh YOUR_ACCESS_TOKEN [--copy]
-#
-# 3. Refresh only the copilot token using an environment variable:
+# 2. Refresh only the copilot token (default, if no argument):
 #    export COPILOT_ACCESS_TOKEN=YOUR_ACCESS_TOKEN
-#    source ./scripts/copilot_token_flow.sh --refresh [--copy]
+#    source ./scripts/copilot_token_flow.sh [--copy]
+#
+# 3. Refresh only the copilot token using an argument:
+#    source ./scripts/copilot_token_flow.sh --refresh YOUR_ACCESS_TOKEN [--copy]
 #
 # After any of these commands, you will have in your shell:
 #   $COPILOT_ACCESS_TOKEN   and   $COPILOT_TOKEN
@@ -24,6 +24,12 @@ show_help() {
   echo "  --refresh <token>     Refresca el copilot token usando un access token válido (argumento o variable COPILOT_ACCESS_TOKEN)."
   echo "  --copy                Copia el copilot token al portapapeles si es posible."
   echo "  --help                Muestra esta ayuda."
+  echo
+  echo "Por defecto, si no se pasa ningún argumento, refresca el copilot token usando la variable COPILOT_ACCESS_TOKEN."
+  echo
+  echo "Ejemplo rápido:"
+  echo "  export COPILOT_ACCESS_TOKEN=YOUR_ACCESS_TOKEN"
+  echo "  source $0 --copy"
   echo
   echo "NOTA: Para que las variables exportadas persistan en tu shell, ejecuta el script con:"
   echo "  source $0 ...  o  . $0 ..."
@@ -76,7 +82,6 @@ obtener_copilot_token() {
   fi
 }
 
-
 # Parse --copy flag (can be anywhere)
 COPILOT_COPY=0
 for arg in "$@"; do
@@ -95,7 +100,7 @@ for arg in "$@"; do
 done
 set -- "${ARGS[@]}"
 
-if [[ $# -eq 0 || "$1" == "--help" ]]; then
+if [[ "$1" == "--help" ]]; then
   show_help
   return
 fi
@@ -149,6 +154,21 @@ if [[ "$1" == "--refresh" ]]; then
 fi
 # END --refresh
 
+# --- Nuevo comportamiento por defecto: refresco automático ---
+if [[ $# -eq 0 ]]; then
+  if [[ -n "$COPILOT_ACCESS_TOKEN" ]]; then
+    echo "Refrescando copilot token usando COPILOT_ACCESS_TOKEN de variable de entorno..."
+    obtener_copilot_token "$COPILOT_ACCESS_TOKEN"
+    return
+  else
+    echo "Error: No se proporcionó access token ni está definida la variable COPILOT_ACCESS_TOKEN."
+    show_help
+    return
+  fi
+fi
+# --- Fin nuevo comportamiento por defecto ---
+
 echo "Argumento no reconocido: $1"
 show_help
 return
+
