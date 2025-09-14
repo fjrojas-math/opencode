@@ -19,20 +19,20 @@
 # set -e
 
 show_help() {
-  echo "Uso: $0 [--authorize | --refresh <access_token>] [--copy]"
-  echo "  --authorize           Ejecuta el flujo completo de autorización Device Flow y obtiene el copilot token."
-  echo "  --refresh <token>     Refresca el copilot token usando un access token válido (argumento o variable COPILOT_ACCESS_TOKEN)."
-  echo "  --copy                Copia el copilot token al portapapeles si es posible."
-  echo "  --help                Muestra esta ayuda."
+  echo "Usage: $0 [--authorize | --refresh <access_token>] [--copy]"
+  echo "  --authorize           Run full Device Flow and get the copilot token."
+  echo "  --refresh <token>     Refresh the copilot token using a valid access token (argument or COPILOT_ACCESS_TOKEN env var)."
+  echo "  --copy                Copy the copilot token to clipboard if possible."
+  echo "  --help                Show this help."
   echo
-  echo "Por defecto, si no se pasa ningún argumento, refresca el copilot token usando la variable COPILOT_ACCESS_TOKEN."
+  echo "By default, if no argument is passed, the script will refresh the copilot token using the COPILOT_ACCESS_TOKEN environment variable."
   echo
-  echo "Ejemplo rápido:"
+  echo "Quick example:"
   echo "  export COPILOT_ACCESS_TOKEN=YOUR_ACCESS_TOKEN"
   echo "  source $0 --copy"
   echo
-  echo "NOTA: Para que las variables exportadas persistan en tu shell, ejecuta el script con:"
-  echo "  source $0 ...  o  . $0 ..."
+  echo "NOTE: To persist exported variables in your shell, run the script with:"
+  echo "  source $0 ...  or  . $0 ..."
 }
 
 obtener_copilot_token() {
@@ -44,10 +44,10 @@ obtener_copilot_token() {
     -H "Editor-Plugin-Version: copilot-chat/0.26.7")
   COPILOT_TOKEN=$(echo "$COPILOT_COPILOT_RESP" | jq -r .token)
   if [[ "$COPILOT_TOKEN" == "null" || -z "$COPILOT_TOKEN" ]]; then
-    echo "Error: No se pudo obtener el copilot token. ¿El access token es válido?" >&2
+    echo "Error: Could not get copilot token. Is the access token valid?" >&2
     return 1
   fi
-  echo "Copilot token obtenido: $COPILOT_TOKEN"
+  echo "Copilot token obtained: $COPILOT_TOKEN"
   # Robust JWT payload decoding
   COPILOT_PAYLOAD_B64=$(echo "$COPILOT_TOKEN" | cut -d '.' -f2)
   # Add padding if needed
@@ -62,14 +62,14 @@ obtener_copilot_token() {
     echo "Warning: Could not decode JWT payload with base64."
     echo "Raw payload (base64): $COPILOT_PAYLOAD_B64"
   else
-    echo "Payload del Copilot Token (JWT):"
+    echo "Copilot Token Payload (JWT):"
     echo "$COPILOT_PAYLOAD_RAW" | jq . 2>/dev/null || {
       echo "Warning: JWT payload is not valid JSON and will not be displayed."
     }
   fi
   export COPILOT_TOKEN
   export COPILOT_ACCESS_TOKEN
-  echo "Variables exportadas: COPILOT_TOKEN y COPILOT_ACCESS_TOKEN (si aplica)"
+  echo "Exported variables: COPILOT_TOKEN and COPILOT_ACCESS_TOKEN (if applicable)"
 
   # Copy to clipboard if requested
   if [[ "$COPILOT_COPY" == "1" ]]; then
@@ -119,8 +119,8 @@ if [[ "$1" == "--authorize" ]]; then
   COPILOT_VERIFICATION_URI=$(echo "$COPILOT_RESP" | jq -r .verification_uri)
   COPILOT_INTERVAL=$(echo "$COPILOT_RESP" | jq -r .interval)
 
-  echo "Abre $COPILOT_VERIFICATION_URI e introduce el código: $COPILOT_USER_CODE"
-  echo "Presiona Enter cuando hayas autorizado el dispositivo..."
+  echo "Open $COPILOT_VERIFICATION_URI and enter the code: $COPILOT_USER_CODE"
+  echo "Press Enter after authorizing the device..."
   read
 
   # 2. Intercambiar device_code por access_token
@@ -137,7 +137,7 @@ if [[ "$1" == "--authorize" ]]; then
     sleep $COPILOT_INTERVAL
   done
 
-  echo "Access token obtenido: $COPILOT_ACCESS_TOKEN"
+  echo "Access token obtained: $COPILOT_ACCESS_TOKEN"
   obtener_copilot_token "$COPILOT_ACCESS_TOKEN"
   return
 fi
@@ -147,9 +147,9 @@ if [[ "$1" == "--refresh" ]]; then
   if [[ -n "$2" ]]; then
     COPILOT_ACCESS_TOKEN="$2"
   elif [[ -n "$COPILOT_ACCESS_TOKEN" ]]; then
-    echo "Usando COPILOT_ACCESS_TOKEN de variable de entorno."
+    echo "Using COPILOT_ACCESS_TOKEN from environment variable."
   else
-    echo "Error: Debes proporcionar el access token como argumento o definir la variable de entorno COPILOT_ACCESS_TOKEN."
+    echo "Error: You must provide the access token as an argument or set the COPILOT_ACCESS_TOKEN environment variable."
     show_help
     return
   fi
@@ -161,18 +161,18 @@ fi
 # --- Nuevo comportamiento por defecto: refresco automático ---
 if [[ $# -eq 0 ]]; then
   if [[ -n "$COPILOT_ACCESS_TOKEN" ]]; then
-    echo "Refrescando copilot token usando COPILOT_ACCESS_TOKEN de variable de entorno..."
+    echo "Refreshing copilot token using COPILOT_ACCESS_TOKEN from environment variable..."
     obtener_copilot_token "$COPILOT_ACCESS_TOKEN"
     return
   else
-    echo "Error: No se proporcionó access token ni está definida la variable COPILOT_ACCESS_TOKEN."
+    echo "Error: No access token provided and COPILOT_ACCESS_TOKEN environment variable is not set."
     show_help
     return
   fi
 fi
 # --- Fin nuevo comportamiento por defecto ---
 
-echo "Argumento no reconocido: $1"
+echo "Unknown argument: $1"
 show_help
 return
 
