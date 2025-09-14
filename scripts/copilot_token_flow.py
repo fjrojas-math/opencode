@@ -43,8 +43,14 @@ Usage: copilot_token_flow.py [--authorize | --refresh <access_token>] [--copy]
   --copy                Copy the copilot token to clipboard if possible.
   --help                Show this help.
 
+By default, if no argument is passed, the script will refresh the copilot token using the COPILOT_ACCESS_TOKEN environment variable.
+
+Quick example:
+  export COPILOT_ACCESS_TOKEN=YOUR_ACCESS_TOKEN
+  python3 scripts/copilot_token_flow.py --copy
+
 NOTE: To export the variables in your shell, use:
-  eval $(python3 scripts/copilot_token_flow.py --refresh ...)
+  eval $(python3 scripts/copilot_token_flow.py)
     """)
 
 def request_device_code():
@@ -150,6 +156,24 @@ def main():
     args = filtered_args
 
     if not args or args[0] == '--help':
+        # --- New default: refresh token using env var if no args ---
+        if not args:
+            access_token = os.environ.get('COPILOT_ACCESS_TOKEN')
+            if not access_token:
+                print("Error: No access token provided and COPILOT_ACCESS_TOKEN environment variable is not set.", file=sys.stderr)
+                print_help()
+                return
+            copilot_token = get_copilot_token(access_token)
+            print(f"Copilot token obtained: {copilot_token}")
+            print("Copilot token payload (JWT):")
+            payload = decode_jwt_payload(copilot_token)
+            print(json.dumps(payload, indent=2))
+            print(f"export COPILOT_ACCESS_TOKEN='{access_token}'")
+            print(f"export COPILOT_TOKEN='{copilot_token}'")
+            if copy_flag:
+                copy_to_clipboard(copilot_token)
+            return
+        # --- End new default ---
         print_help()
         return
 
@@ -184,7 +208,6 @@ def main():
             access_token = args[1]
         else:
             access_token = os.environ.get('COPILOT_ACCESS_TOKEN')
-            print("DEBUG: COPILOT_ACCESS_TOKEN =", access_token)
             if not access_token:
                 print("Error: Provide the access token as argument or set COPILOT_ACCESS_TOKEN env var.", file=sys.stderr)
                 print_help()
