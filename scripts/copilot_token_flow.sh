@@ -38,7 +38,10 @@ show_help() {
 obtener_copilot_token() {
   COPILOT_ACCESS_TOKEN="$1"
   COPILOT_COPILOT_RESP=$(curl -s -X GET "https://api.github.com/copilot_internal/v2/token" \
-    -H "Authorization: token $COPILOT_ACCESS_TOKEN")
+    -H "Authorization: token $COPILOT_ACCESS_TOKEN" \
+    -H "User-Agent: GitHubCopilotChat/0.26.7" \
+    -H "Editor-Version: vscode/1.99.3" \
+    -H "Editor-Plugin-Version: copilot-chat/0.26.7")
   COPILOT_TOKEN=$(echo "$COPILOT_COPILOT_RESP" | jq -r .token)
   if [[ "$COPILOT_TOKEN" == "null" || -z "$COPILOT_TOKEN" ]]; then
     echo "Error: No se pudo obtener el copilot token. ¿El access token es válido?" >&2
