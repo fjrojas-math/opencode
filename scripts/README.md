@@ -1,15 +1,15 @@
 # Copilot Token Flow Scripts
 
-Este directorio contiene dos scripts para obtener y refrescar el token de GitHub Copilot de forma sencilla y compatible con Linux:
+This directory contains two scripts to easily obtain and refresh your GitHub Copilot token on Linux:
 
-- `copilot_token_flow.sh` (Bash, compatible con bash y zsh)
-- `copilot_token_flow.py` (Python 3, sin dependencias externas)
+- `copilot_token_flow.sh` (Bash, compatible with bash and zsh)
+- `copilot_token_flow.py` (Python 3, no external dependencies)
 
 ---
 
-## Uso rápido (refresco automático)
+## Quick usage (automatic refresh)
 
-Si ya tienes un access token de GitHub Copilot, simplemente exporta la variable y ejecuta el script:
+If you already have a GitHub Copilot access token, simply export the variable and run the script:
 
 ### Bash
 
@@ -25,13 +25,13 @@ export COPILOT_ACCESS_TOKEN=YOUR_ACCESS_TOKEN
 python3 scripts/copilot_token_flow.py --copy
 ```
 
-Esto refrescará el copilot token y lo copiará al portapapeles si tienes `xclip` o `wl-copy` y entorno gráfico.
+This will refresh the copilot token and copy it to your clipboard if you have `xclip` or `wl-copy` and a graphical session.
 
 ---
 
-## Flujo completo de autorización (Device Flow)
+## Full authorization flow (Device Flow)
 
-Si no tienes access token, puedes obtenerlo y refrescar el copilot token en un solo paso:
+If you don't have an access token, you can obtain it and refresh the copilot token in one step:
 
 ### Bash
 
@@ -45,52 +45,52 @@ source scripts/copilot_token_flow.sh --authorize --copy
 python3 scripts/copilot_token_flow.py --authorize --copy
 ```
 
-Sigue las instrucciones en pantalla: abre la URL, introduce el código, autoriza y presiona Enter. El script mostrará ambos tokens y copiará el copilot token al portapapeles si es posible.
+Follow the on-screen instructions: open the URL, enter the code, authorize, and press Enter. The script will display both tokens and copy the copilot token to your clipboard if possible.
 
 ---
 
-## Opciones disponibles
+## Available options
 
-- `--authorize` Ejecuta el flujo completo de autorización Device Flow y obtiene ambos tokens.
-- `--refresh <token>` Refresca el copilot token usando un access token (argumento o variable de entorno).
-- `--copy` Copia el copilot token al portapapeles si es posible.
-- `--help` Muestra la ayuda.
+- `--authorize` Runs the full Device Flow and obtains both tokens.
+- `--refresh <token>` Refreshes the copilot token using an access token (argument or environment variable).
+- `--copy` Copies the copilot token to the clipboard if possible.
+- `--help` Shows help.
 
-> **Nota:** Si no se pasa ningún argumento, ambos scripts refrescan el copilot token usando la variable de entorno `COPILOT_ACCESS_TOKEN`.
+> **Note:** If no argument is passed, both scripts refresh the copilot token using the `COPILOT_ACCESS_TOKEN` environment variable.
 
 ---
 
-## Exportar variables en tu shell
+## Exporting variables in your shell
 
-- En bash, si usas `source`, las variables se exportan automáticamente.
-- En python, puedes usar:
+- In bash, if you use `source`, the variables are exported automatically.
+- In python, you can use:
   ```bash
   eval $(python3 scripts/copilot_token_flow.py --copy)
   ```
 
 ---
 
-## Compatibilidad y dependencias
+## Compatibility and dependencies
 
-- **Bash:** Requiere `curl`, `jq` y opcionalmente `xclip` o `wl-copy` para copiar al portapapeles.
-- **Python:** Solo requiere Python 3 estándar. Para copiar al portapapeles, necesita `xclip` o `wl-copy` y entorno gráfico.
-- Ambos scripts funcionan en Linux estándar y son compatibles con bash y zsh.
+- **Bash:** Requires `curl`, `jq`, and optionally `xclip` or `wl-copy` for clipboard support.
+- **Python:** Only requires standard Python 3. For clipboard support, needs `xclip` or `wl-copy` and a graphical session.
+- Both scripts work on standard Linux and are compatible with bash and zsh.
 
 ---
 
-## Ejemplo de salida
+## Example output
 
 ```
-Copilot token obtenido: ghc_xxx...
-Payload del Copilot Token (JWT):
+Copilot token obtained: ghc_xxx...
+Copilot Token Payload (JWT):
 {
   "exp": 1700000000,
   ...
 }
-Variables exportadas: COPILOT_TOKEN y COPILOT_ACCESS_TOKEN (si aplica)
+Exported variables: COPILOT_TOKEN and COPILOT_ACCESS_TOKEN (if applicable)
 Copilot token copied to clipboard (xclip).
 ```
 
 ---
 
-¿Dudas o problemas? Abre un issue o revisa la ayuda de cada script con `--help`.
+Questions or issues? Open an issue or check each script's help with `--help`.
