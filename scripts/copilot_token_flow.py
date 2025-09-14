@@ -3,17 +3,18 @@
 Usage examples (copy & paste):
 
 1. Full flow (gets and prints both tokens):
-   python3 scripts/copilot_token_flow.py --authorize
+   python3 scripts/copilot_token_flow.py --authorize [--copy]
 
 2. Refresh only the copilot token using an argument:
-   python3 scripts/copilot_token_flow.py --refresh YOUR_ACCESS_TOKEN
+   python3 scripts/copilot_token_flow.py --refresh YOUR_ACCESS_TOKEN [--copy]
 
 3. Refresh only the copilot token using an environment variable:
    export COPILOT_ACCESS_TOKEN=YOUR_ACCESS_TOKEN
-   python3 scripts/copilot_token_flow.py --refresh
+   python3 scripts/copilot_token_flow.py --refresh [--copy]
 
 After any of these commands, you will see:
   export COPILOT_ACCESS_TOKEN=...  and  export COPILOT_TOKEN=...
+If you use --copy, the copilot token will be copied to your clipboard (if supported).
 You can copy-paste these lines or use:
   eval $(python3 scripts/copilot_token_flow.py --refresh ...)
 to export them directly in your shell.
@@ -26,18 +27,20 @@ import json
 import base64
 import urllib.request
 import urllib.parse
+import urllib.error
+import subprocess
 
 CLIENT_ID = "Iv1.b507a08c87ecfe98"
 DEVICE_CODE_URL = "https://github.com/login/device/code"
 ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token"
 COPILOT_TOKEN_URL = "https://api.github.com/copilot_internal/v2/token"
 
-
 def print_help():
     print("""
-Usage: copilot_token_flow.py [--authorize | --refresh <access_token>]
+Usage: copilot_token_flow.py [--authorize | --refresh <access_token>] [--copy]
   --authorize           Run full Device Flow and get both tokens.
   --refresh <token>     Refresh the copilot token using a valid access token (argument or COPILOT_ACCESS_TOKEN env var).
+  --copy                Copy the copilot token to clipboard if possible.
   --help                Show this help.
 
 NOTE: To export the variables in your shell, use:
@@ -70,8 +73,6 @@ def poll_for_access_token(device_code, interval):
         if access_token:
             return access_token
         time.sleep(interval)
-
-import urllib.error
 
 def get_copilot_token(access_token):
     req = urllib.request.Request(COPILOT_TOKEN_URL, headers={
@@ -108,8 +109,46 @@ def decode_jwt_payload(jwt_token):
         print(f"Error decoding JWT: {e}", file=sys.stderr)
         return None
 
+def copy_to_clipboard(token):
+    # Try xclip (X11)
+    if shutil.which('xclip') and os.environ.get('DISPLAY'):
+        try:
+            p = subprocess.Popen(['xclip', '-selection', 'clipboard'], stdin=subprocess.PIPE)
+            p.communicate(input=token.encode())
+            if p.returncode == 0:
+                print("Copilot token copied to clipboard (xclip).")
+                return
+        except Exception:
+            pass
+    # Try wl-copy (Wayland)
+    if shutil.which('wl-copy') and os.environ.get('WAYLAND_DISPLAY'):
+        try:
+            p = subprocess.Popen(['wl-copy'], stdin=subprocess.PIPE)
+            p.communicate(input=token.encode())
+            if p.returncode == 0:
+                print("Copilot token copied to clipboard (wl-copy).")
+                return
+        except Exception:
+            pass
+    # Fallback: print token for manual copy
+    print("Warning: No clipboard tool found or no graphical session detected.")
+    print("Copy this token manually:")
+    print(token)
+
+import shutil
+
 def main():
     args = sys.argv[1:]
+    # Detect --copy flag and remove it from args
+    copy_flag = False
+    filtered_args = []
+    for arg in args:
+        if arg == '--copy':
+            copy_flag = True
+        else:
+            filtered_args.append(arg)
+    args = filtered_args
+
     if not args or args[0] == '--help':
         print_help()
         return
@@ -136,6 +175,8 @@ def main():
         # Step 5: Print export lines
         print(f"export COPILOT_ACCESS_TOKEN='{access_token}'")
         print(f"export COPILOT_TOKEN='{copilot_token}'")
+        if copy_flag:
+            copy_to_clipboard(copilot_token)
         return
 
     if args[0] == '--refresh':
@@ -155,6 +196,8 @@ def main():
         print(json.dumps(payload, indent=2))
         print(f"export COPILOT_ACCESS_TOKEN='{access_token}'")
         print(f"export COPILOT_TOKEN='{copilot_token}'")
+        if copy_flag:
+            copy_to_clipboard(copilot_token)
         return
 
     print(f"Unknown argument: {args[0]}")
