@@ -83,7 +83,9 @@ def poll_for_access_token(device_code, interval):
 def get_copilot_token(access_token):
     req = urllib.request.Request(COPILOT_TOKEN_URL, headers={
         'Authorization': f'token {access_token}',
-        'User-Agent': 'vscode/1.89.1'
+        'User-Agent': 'GitHubCopilotChat/0.26.7',
+        'Editor-Version': 'vscode/1.99.3',
+        'Editor-Plugin-Version': 'copilot-chat/0.26.7',
     })
     try:
         with urllib.request.urlopen(req) as resp:
