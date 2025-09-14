@@ -53,8 +53,7 @@ obtener_copilot_token() {
   else
     echo "Payload del Copilot Token (JWT):"
     echo "$COPILOT_PAYLOAD_RAW" | jq . 2>/dev/null || {
-      echo "Warning: Could not parse payload as JSON. Raw payload:"
-      echo "$COPILOT_PAYLOAD_RAW"
+      echo "Warning: JWT payload is not valid JSON and will not be displayed."
     }
   fi
   export COPILOT_TOKEN
