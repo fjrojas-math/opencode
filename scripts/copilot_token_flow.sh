@@ -117,7 +117,8 @@ if [[ "$1" == "--authorize" ]]; then
   COPILOT_INTERVAL=$(echo "$COPILOT_RESP" | jq -r .interval)
 
   echo "Abre $COPILOT_VERIFICATION_URI e introduce el código: $COPILOT_USER_CODE"
-  read -p "Presiona Enter cuando hayas autorizado el dispositivo..."
+  echo "Presiona Enter cuando hayas autorizado el dispositivo..."
+  read
 
   # 2. Intercambiar device_code por access_token
   while true; do
